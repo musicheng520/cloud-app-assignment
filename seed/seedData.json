@@ -1,0 +1,35 @@
+[
+  {
+    "PK": "m#1",
+    "SK": "m#1",
+    "title": "The Shawshank Redemption",
+    "releaseDate": "1994",
+    "overview": "Two imprisoned men bond over a number of years."
+  },
+  {
+    "PK": "a#1",
+    "SK": "a#1",
+    "name": "Morgan Freeman",
+    "dob": "1937-06-01",
+    "bio": "An American actor, producer, and narrator."
+  },
+  {
+    "PK": "a#2",
+    "SK": "a#2",
+    "name": "Tim Robbins",
+    "dob": "1958-10-16",
+    "bio": "American actor and director."
+  },
+  {
+    "PK": "m#1",
+    "SK": "a#1",
+    "roleName": "Red",
+    "roleDescription": "The narrator of the story."
+  },
+  {
+    "PK": "m#1",
+    "SK": "a#2",
+    "roleName": "Andy Dufresne",
+    "roleDescription": "A banker sentenced to life in prison."
+  }
+]
