@@ -1,26 +1,44 @@
-import * as cdk from 'aws-cdk-lib/core';
+import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 
 export class CloudAppAssignmentStack extends cdk.Stack {
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-  
+
+    // DynamoDB table
     const movieTable = new dynamodb.Table(this, 'MovieTable', {
-    partitionKey: {
-      name: 'PK',
-      type: dynamodb.AttributeType.STRING
-    },
+      partitionKey: {
+        name: 'PK',
+        type: dynamodb.AttributeType.STRING
+      },
+      sortKey: {
+        name: 'SK',
+        type: dynamodb.AttributeType.STRING
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
 
-    sortKey: {
-      name: 'SK',
-      type: dynamodb.AttributeType.STRING
-    },
+    // Lambda (TypeScript)
+    const getMovieRoles = new lambdaNodejs.NodejsFunction(this, 'GetMovieRoles', {
 
-    billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      runtime: lambda.Runtime.NODEJS_18_X,
 
-    removalPolicy: cdk.RemovalPolicy.DESTROY
-  });
+      entry: 'lambda/getMovieRoles.ts',
+
+      handler: 'handler',
+
+      environment: {
+        TABLE_NAME: movieTable.tableName
+      }
+
+    });
+
+    // Grant DynamoDB read permission
+    movieTable.grantReadData(getMovieRoles);
   }
 }
