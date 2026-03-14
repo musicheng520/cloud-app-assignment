@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 
 export class CloudAppAssignmentStack extends cdk.Stack {
 
@@ -37,6 +38,22 @@ export class CloudAppAssignmentStack extends cdk.Stack {
       }
 
     });
+
+    const api = new apigateway.RestApi(this, 'MovieApi', {
+        restApiName: 'Movie Service'
+      });
+
+      const movies = api.root.addResource('movies');
+
+      const movie = movies.addResource('{movieID}');
+
+      const role = movie.addResource('role');
+
+      role.addMethod(
+        'GET',
+        new apigateway.LambdaIntegration(getMovieRoles)
+      );
+
 
     // Grant DynamoDB read permission
     movieTable.grantReadData(getMovieRoles);
