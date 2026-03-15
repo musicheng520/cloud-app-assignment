@@ -39,6 +39,21 @@ export class CloudAppAssignmentStack extends cdk.Stack {
 
     });
 
+      const getActor = new lambdaNodejs.NodejsFunction(this, 'GetActor', {
+
+        runtime: lambda.Runtime.NODEJS_18_X,
+
+        entry: 'lambda/getActor.ts',
+
+        handler: 'handler',
+
+        environment: {
+          TABLE_NAME: movieTable.tableName
+        }
+
+      });
+
+
     const api = new apigateway.RestApi(this, 'MovieApi', {
         restApiName: 'Movie Service'
       });
@@ -49,13 +64,22 @@ export class CloudAppAssignmentStack extends cdk.Stack {
 
       const role = movie.addResource('role');
 
+      const actors = api.root.addResource('actors');
+
+      const actor = actors.addResource('{actorID}');
+
       role.addMethod(
         'GET',
         new apigateway.LambdaIntegration(getMovieRoles)
       );
-
+  
+      actor.addMethod(
+        'GET',
+        new apigateway.LambdaIntegration(getActor)
+      );
 
     // Grant DynamoDB read permission
     movieTable.grantReadData(getMovieRoles);
+    movieTable.grantReadData(getActor);
   }
 }
