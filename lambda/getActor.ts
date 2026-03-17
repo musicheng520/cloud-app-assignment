@@ -6,7 +6,7 @@ const client = new DynamoDBClient({});
 export const handler = async (event: any) => {
 
   const actorID = event.pathParameters.actorID;
-  const movie = event.queryStringParameters?.movie;  
+  const movie = event.queryStringParameters?.movie;
 
   // ---------- 1. get actor ----------
 
@@ -18,14 +18,22 @@ export const handler = async (event: any) => {
     }
   }));
 
-  const actor = actorResult.Items?.[0];
+  const item = actorResult.Items?.[0];
+
+  const actor = item ? {
+    name: item.name,
+    bio: item.bio,
+    dob: item.dob
+  } : null;
 
   // ---------- 2. if no movie → return actor ----------
 
   if (!movie) {
     return {
       statusCode: 200,
-      body: JSON.stringify(actor)
+      body: JSON.stringify({
+        data: actor
+      })
     };
   }
 
@@ -39,15 +47,22 @@ export const handler = async (event: any) => {
     }
   }));
 
-  const role = roleResult.Item;
+  const roleItem = roleResult.Item;
+
+  const role = roleItem ? {
+    roleName: roleItem.roleName,
+    roleDescription: roleItem.roleDescription
+  } : null;
 
   // ---------- 4. return combined ----------
 
   return {
     statusCode: 200,
     body: JSON.stringify({
-      actor,
-      role
+      data: {
+        actor,
+        role
+      }
     })
   };
 };

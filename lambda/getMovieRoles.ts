@@ -7,23 +7,25 @@ export const handler = async (event: any) => {
 
   const movieID = event.pathParameters.movieID;
 
-  const params = {
+  const result = await client.send(new QueryCommand({
     TableName: process.env.TABLE_NAME,
     KeyConditionExpression: "PK = :pk",
     ExpressionAttributeValues: {
       ":pk": `m#${movieID}`
     }
-  };
+  }));
 
-  const command = new QueryCommand(params);
-  const result = await client.send(command);
-
-  const roles = result.Items?.filter(
-    (item: any) => item.SK.startsWith("a#")
-  );
+  const roles = (result.Items || [])
+    .filter((item: any) => item.SK.startsWith("a#"))
+    .map((item: any) => ({
+      roleName: item.roleName,
+      roleDescription: item.roleDescription
+    }));
 
   return {
     statusCode: 200,
-    body: JSON.stringify(roles)
+    body: JSON.stringify({
+      data: roles
+    })
   };
 };
