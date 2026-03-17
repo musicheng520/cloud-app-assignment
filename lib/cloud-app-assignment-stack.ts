@@ -53,6 +53,20 @@ export class CloudAppAssignmentStack extends cdk.Stack {
 
       });
 
+      const getMovie = new lambdaNodejs.NodejsFunction(this, 'GetMovie', {
+
+        runtime: lambda.Runtime.NODEJS_18_X,
+
+        entry: 'lambda/getMovie.ts',
+
+        handler: 'handler',
+
+        environment: {
+          TABLE_NAME: movieTable.tableName
+        }
+
+      });
+
 
     const api = new apigateway.RestApi(this, 'MovieApi', {
         restApiName: 'Movie Service'
@@ -78,8 +92,14 @@ export class CloudAppAssignmentStack extends cdk.Stack {
         new apigateway.LambdaIntegration(getActor)
       );
 
+      movie.addMethod(
+      'GET',
+      new apigateway.LambdaIntegration(getMovie)
+      );
+
     // Grant DynamoDB read permission
     movieTable.grantReadData(getMovieRoles);
     movieTable.grantReadData(getActor);
+    movieTable.grantReadData(getMovie);
   }
 }
