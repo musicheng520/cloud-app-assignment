@@ -6,7 +6,7 @@ const client = new DynamoDBClient({});
 export const handler = async (event: any) => {
 
   const actorID = event.pathParameters.actorID;
-  const movieID = event.queryStringParameters?.movieID;
+  const movie = event.queryStringParameters?.movie;  
 
   // ---------- 1. get actor ----------
 
@@ -20,9 +20,9 @@ export const handler = async (event: any) => {
 
   const actor = actorResult.Items?.[0];
 
-  // ---------- 2. if no movieID → return actor ----------
+  // ---------- 2. if no movie → return actor ----------
 
-  if (!movieID) {
+  if (!movie) {
     return {
       statusCode: 200,
       body: JSON.stringify(actor)
@@ -34,7 +34,7 @@ export const handler = async (event: any) => {
   const roleResult = await client.send(new GetCommand({
     TableName: process.env.TABLE_NAME,
     Key: {
-      PK: `m#${movieID}`,
+      PK: `m#${movie}`,
       SK: `a#${actorID}`
     }
   }));
