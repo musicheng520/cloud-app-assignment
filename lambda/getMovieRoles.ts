@@ -6,6 +6,7 @@ const client = new DynamoDBClient({});
 export const handler = async (event: any) => {
 
   const movieID = event.pathParameters.movieID;
+  const actorID = event.queryStringParameters?.actor; 
 
   const result = await client.send(new QueryCommand({
     TableName: process.env.TABLE_NAME,
@@ -15,12 +16,18 @@ export const handler = async (event: any) => {
     }
   }));
 
-  const roles = (result.Items || [])
+  let roles = (result.Items || [])
     .filter((item: any) => item.SK.startsWith("a#"))
     .map((item: any) => ({
+      actorID: item.SK.replace("a#", ""), 
       roleName: item.roleName,
       roleDescription: item.roleDescription
     }));
+
+  // if actorID -> filter
+  if (actorID) {
+    roles = roles.filter((r: any) => r.actorID === actorID);
+  }
 
   return {
     statusCode: 200,
