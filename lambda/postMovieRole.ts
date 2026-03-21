@@ -7,21 +7,36 @@ export const handler = async (event: any) => {
 
   try {
 
+    // ---------- API KEY CHECK  ----------
+    const apiKey = event.headers?.["x-api-key"];
+
+    if (!apiKey) {
+      return {
+        statusCode: 403,
+        headers: {
+          "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify({ message: "API key required" })
+      };
+    }
+
+    // ---------- parse body ----------
     const body = JSON.parse(event.body);
 
     const { movieID, actorID, roleName, roleDescription } = body;
 
     // ---------- validation ----------
-
     if (!movieID || !actorID || !roleName || !roleDescription) {
       return {
         statusCode: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*"
+        },
         body: JSON.stringify({ message: "Missing required fields" })
       };
     }
 
     // ---------- put to DynamoDB ----------
-
     await client.send(new PutCommand({
       TableName: process.env.TABLE_NAME,
       Item: {
@@ -45,7 +60,9 @@ export const handler = async (event: any) => {
       })
     };
 
-  } catch (error) {
+  } catch (error: any) {
+
+    console.error(error);
 
     return {
       statusCode: 500,
@@ -53,8 +70,7 @@ export const handler = async (event: any) => {
         "Access-Control-Allow-Origin": "*"
       },
       body: JSON.stringify({
-        message: "Internal server error",
-        error: error
+        message: "Internal server error"
       })
     };
   }
