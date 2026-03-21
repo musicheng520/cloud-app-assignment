@@ -37,6 +37,9 @@ export const handler = async (event: any) => {
 
     return {
       statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*"
+      },
       body: JSON.stringify({
         message: "Role added successfully"
       })
@@ -46,6 +49,9 @@ export const handler = async (event: any) => {
 
     return {
       statusCode: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*"
+      },
       body: JSON.stringify({
         message: "Internal server error",
         error: error
