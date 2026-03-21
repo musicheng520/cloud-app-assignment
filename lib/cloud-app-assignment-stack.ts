@@ -67,6 +67,19 @@ export class CloudAppAssignmentStack extends cdk.Stack {
 
       });
 
+    const postMovieRole = new lambdaNodejs.NodejsFunction(this, 'PostMovieRole', {
+
+      runtime: lambda.Runtime.NODEJS_18_X,
+
+      entry: 'lambda/postMovieRole.ts',
+
+       handler: 'handler',
+
+      environment: {
+      TABLE_NAME: movieTable.tableName
+      }
+    });
+
 
     const api = new apigateway.RestApi(this, 'MovieApi', {
         restApiName: 'Movie Service'
@@ -82,9 +95,21 @@ export class CloudAppAssignmentStack extends cdk.Stack {
 
       const actor = actors.addResource('{actorID}');
 
+      const roleRoot = movies.addResource('role');
+
+      roleRoot.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(postMovieRole)
+      );
+
       role.addMethod(
         'GET',
         new apigateway.LambdaIntegration(getMovieRoles)
+      );
+
+      role.addMethod(
+        'POST',
+        new apigateway.LambdaIntegration(postMovieRole)
       );
   
       actor.addMethod(
@@ -101,5 +126,6 @@ export class CloudAppAssignmentStack extends cdk.Stack {
     movieTable.grantReadData(getMovieRoles);
     movieTable.grantReadData(getActor);
     movieTable.grantReadData(getMovie);
+    movieTable.grantWriteData(postMovieRole);
   }
 }
