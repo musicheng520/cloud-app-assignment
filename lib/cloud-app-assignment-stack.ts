@@ -4,6 +4,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 export class CloudAppAssignmentStack extends cdk.Stack {
 
@@ -127,5 +128,13 @@ export class CloudAppAssignmentStack extends cdk.Stack {
     movieTable.grantReadData(getActor);
     movieTable.grantReadData(getMovie);
     movieTable.grantWriteData(postMovieRole);
+
+    // Grant Translate permission
+    getActor.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["translate:TranslateText"],
+        resources: ["*"]
+      })
+    );
   }
 }
