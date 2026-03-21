@@ -1,43 +1,36 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const client = new DynamoDBClient({});
+const docClient = DynamoDBDocumentClient.from(client);
 
 export const handler = async (event: any) => {
 
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,X-Api-Key",
+    "Access-Control-Allow-Methods": "POST,OPTIONS"
+  };
+
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers: corsHeaders, body: "" };
+  }
+
   try {
 
-    // ---------- API KEY CHECK  ----------
-    const apiKey = event.headers?.["x-api-key"];
-
-    if (!apiKey) {
-      return {
-        statusCode: 403,
-        headers: {
-          "Access-Control-Allow-Origin": "*"
-        },
-        body: JSON.stringify({ message: "API key required" })
-      };
-    }
-
-    // ---------- parse body ----------
     const body = JSON.parse(event.body);
 
     const { movieID, actorID, roleName, roleDescription } = body;
 
-    // ---------- validation ----------
     if (!movieID || !actorID || !roleName || !roleDescription) {
       return {
         statusCode: 400,
-        headers: {
-          "Access-Control-Allow-Origin": "*"
-        },
+        headers: corsHeaders,
         body: JSON.stringify({ message: "Missing required fields" })
       };
     }
 
-    // ---------- put to DynamoDB ----------
-    await client.send(new PutCommand({
+    await docClient.send(new PutCommand({
       TableName: process.env.TABLE_NAME,
       Item: {
         PK: `m#${movieID}`,
@@ -52,26 +45,15 @@ export const handler = async (event: any) => {
 
     return {
       statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: JSON.stringify({
-        message: "Role added successfully"
-      })
+      headers: corsHeaders,
+      body: JSON.stringify({ message: "Role added successfully" })
     };
 
-  } catch (error: any) {
-
-    console.error(error);
-
+  } catch (err) {
     return {
       statusCode: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: JSON.stringify({
-        message: "Internal server error"
-      })
+      headers: corsHeaders,
+      body: JSON.stringify({ message: "Internal server error" })
     };
   }
 };
