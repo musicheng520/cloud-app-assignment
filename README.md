@@ -1,215 +1,134 @@
-# Cloud App Assignment – Movie API
+## Assignment - Cloud App Development
 
-## 📌 Overview
-
-This project implements a serverless RESTful API using AWS services to manage movie, actor, and role data.
-
-The system allows clients to:
-- Retrieve movie details
-- Retrieve roles for a specific movie
-- Retrieve actor details
-- Retrieve an actor’s role within a specific movie
-
-The application is built using:
-- AWS Lambda (Node.js / TypeScript)
-- Amazon API Gateway
-- Amazon DynamoDB (Single Table Design)
-- AWS CDK (Infrastructure as Code)
+__Name:__ Sicheng Mu
 
 ---
 
-## 🏗️ Architecture
+## Overview
 
-The system follows a serverless architecture:
-
-Client → API Gateway → Lambda → DynamoDB
-
-### Components
-
-- **API Gateway**  
-  Handles HTTP requests and routes them to Lambda functions.
-
-- **Lambda Functions**  
-  Contain business logic and data transformation.
-
-- **DynamoDB**  
-  Stores all entities (movies, actors, roles) in a single table.
-
-- **AWS CDK**  
-  Used to define and deploy all infrastructure.
+This project implements a secure serverless Web API for managing movie cast information using AWS services.  
+The application supports retrieving actor details, movie information, and roles, as well as adding new roles.
 
 ---
 
-## 🗄️ Data Model
+## Links
 
-A **single-table design** is used in DynamoDB.
+__Demo:__ https://www.youtube.com/watch?v=tsUJskz7zMw
 
-### Primary Keys
+---
 
-- PK (Partition Key)
-- SK (Sort Key)
+## Screenshots
 
-### Entity Structure
+### API Gateway
+
+![][api]
+
+### DynamoDB
+
+![][db]
+
+---
+
+## Design Features
+
+### API Design
+The application uses a RESTful API built with Amazon API Gateway.
+
+Implemented endpoints:
+- GET /actors/{actorID}
+- GET /movies/{movieID}
+- GET /movies/{movieID}/role
+- POST /movies/role
+
+The POST endpoint is protected using an API key.
+
+---
+
+### Lambda Functions
+Each API endpoint is backed by a dedicated AWS Lambda function.
+
+Responsibilities include:
+- Handling incoming requests
+- Validating input
+- Interacting with DynamoDB
+- Formatting responses
+
+AWS SDK v3 is used for all database operations.
+
+---
+
+### DynamoDB Design (Single-table)
+A single-table design is used to model a many-to-many relationship between movies and actors.
 
 | Entity | PK | SK |
-|------|----|----|
-| Movie | m#movieID | m#movieID |
-| Actor | a#actorID | a#actorID |
-| Role  | m#movieID | a#actorID |
+|--------|----|----|
+| Movie  | m#movieID | m#movieID |
+| Actor  | a#actorID | a#actorID |
+| Role   | m#movieID | a#actorID |
+
+This structure supports:
+- Retrieving actor details
+- Retrieving movie details
+- Querying all roles in a movie
+- Filtering roles by actor
 
 ---
 
-### Explanation
-
-- Movie:
-  PK = m#1, SK = m#1
-
-- Actor:
-  PK = a#1, SK = a#1
-
-- Role:
-  PK = m#1, SK = a#1
-
-This design allows:
-- Efficient queries by movie
-- Direct lookup of actor-role relationships
-- No need for joins
+### Query Features
+- Retrieve all roles for a movie
+- Optional filtering by actorID using query parameters
+- Efficient querying using partition keys
 
 ---
 
-## 🔗 API Endpoints
+### Translation Feature
+The API supports translation of:
+- Actor biography
+- Role description
 
-### 1. Get Movie
-
-GET /movies/{movieID}
-
-Response:
-{
-  "data": {
-    "title": "The Shawshank Redemption",
-    "overview": "...",
-    "releaseDate": "1994-09-23"
-  }
-}
+This is implemented using Amazon Translate.  
+The target language is provided via query parameters.
 
 ---
 
-### 2. Get Roles for a Movie
+## Extra Features
 
-GET /movies/{movieID}/role
-
-Response:
-{
-  "data": [
-    {
-      "roleName": "Red",
-      "roleDescription": "..."
-    }
-  ]
-}
+### API Security
+- POST /movies/role requires an API key
+- Usage plan and throttling are configured
 
 ---
 
-### 3. Get Actor
+### Full Stack Integration
+A React frontend is used to interact with the API.
 
-GET /actors/{actorID}
-
-Response:
-{
-  "data": {
-    "name": "Morgan Freeman",
-    "bio": "...",
-    "dob": "1937-06-01"
-  }
-}
+Implemented features:
+- Actor search with optional translation
+- Display of movie roles
+- Add new role using POST request
 
 ---
 
-### 4. Get Actor + Role in a Movie
+### Deployment
+The backend is deployed using AWS CDK.
 
-GET /actors/{actorID}?movie={movieID}
-
-Response:
-{
-  "data": {
-    "actor": {
-      "name": "...",
-      "bio": "...",
-      "dob": "..."
-    },
-    "role": {
-      "roleName": "...",
-      "roleDescription": "..."
-    }
-  }
-}
+Resources include:
+- DynamoDB table
+- Lambda functions
+- API Gateway configuration
 
 ---
 
-## ⚙️ Key Design Decisions
+## Notes
 
-### 1. Single Table Design
-
-All data is stored in a single DynamoDB table.
-
-Benefits:
-- Eliminates joins
-- Improves performance
-- Supports flexible access patterns
+Route53 is not used in this project.
 
 ---
 
-### 2. Query + Get Pattern
+## AI Declaration
 
-- Query is used for retrieving collections (e.g., roles)
-- GetItem is used for direct lookup (e.g., movie or role)
-
+1. AI tools were used during development primarily for debugging and resolving integration issues between the React frontend and the serverless API. 
+2. AI tools were used to write readme file.
 ---
-
-### 3. API Response Abstraction
-
-The API does not expose internal fields like PK and SK.
-
-Instead, all responses follow:
-
-{
-  "data": ...
-}
-
-Benefits:
-- Cleaner API design
-- Better separation of concerns
-- Improved usability
-
----
-
-### 4. Optional Query Parameter
-
-The endpoint:
-
-GET /actors/{actorID}?movie={movieID}
-
-Allows:
-- Actor-only retrieval
-- Actor + role retrieval
-
-This simulates a relational join in a NoSQL system.
-
----
-
-## 🚀 Deployment
-
-npm install  
-npx aws-cdk deploy  
-
----
-
-## 📊 Summary
-
-This project demonstrates:
-
-- Serverless application development
-- DynamoDB single-table modelling
-- Efficient query patterns
-- Clean API design
-- Infrastructure as Code using CDK
+[api]: ./images/api.png
+[db]: ./images/db.png
